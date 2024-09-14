@@ -34,12 +34,19 @@ func New(program Program, args []Arg) *CLI {
 	}
 }
 
+func (cli *CLI) reset() *CLI {
+	cli.input = Input{}
+	cli.inArgs = []string{}
+
+	return cli
+}
+
 // Set input arguments from a string
 //
 // Example: `-o /tmp/ --verbose`
 func (cli *CLI) FromString(str string) *CLI {
 	cli.arguments = simplifyArgs(strings.Split(str, " "))
-	return cli
+	return cli.reset()
 }
 
 // Set input arguments from os.Args (provided from calling the binary)
@@ -47,13 +54,13 @@ func (cli *CLI) FromArgs() *CLI {
 	if len(os.Args) > 1 {
 		cli.arguments = simplifyArgs(os.Args[1:])
 	}
-	return cli
+	return cli.reset()
 }
 
 // Set input arguments directly
 func (cli *CLI) FromSlice(args []string) *CLI {
 	cli.arguments = simplifyArgs(args)
-	return cli
+	return cli.reset()
 }
 
 // Parse input arguments and execute the correct program
