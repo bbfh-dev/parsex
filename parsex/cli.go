@@ -13,6 +13,7 @@ type Program func(in Input, args ...string) error
 
 // The primary handler for a single sub-command
 type CLI struct {
+	Name       string
 	cliProgram Program
 	cliArgs    []Arg
 	argToIndex map[string]int
@@ -22,9 +23,11 @@ type CLI struct {
 }
 
 // Create a new program. Use for both main entry and branches (sub-commands)
-func New(program Program, args []Arg) *CLI {
-	args = applyAutoFlags(args)
+func New(name string, program Program, args []Arg) *CLI {
+	prepend := []Arg{{Name: "help", Match: "--AUTO", Desc: "print help message and exit"}}
+	args = applyAutoFlags(append(prepend, args...))
 	return &CLI{
+		Name:       name,
 		cliProgram: program,
 		cliArgs:    args,
 		argToIndex: argToIndexMap(args),
@@ -108,6 +111,11 @@ func (cli *CLI) Run() error {
 		}
 
 		i += diff
+	}
+
+	if cli.input.Has("help") {
+		fmt.Println(cli.Help(cli.Name))
+		return nil
 	}
 
 	return cli.cliProgram(cli.input, cli.inArgs...)

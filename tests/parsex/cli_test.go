@@ -15,23 +15,34 @@ func AnotherProgram(in parsex.Input, args ...string) error {
 	return nil
 }
 
-var BuildCLI = parsex.New(AnotherProgram, []parsex.Arg{
+var BuildCLI = parsex.New("example build", AnotherProgram, []parsex.Arg{
 	{Name: "output", Match: "--AUTO,-o", Desc: "output directory", Check: parsex.ValidPath},
 })
 
-var CLI = parsex.New(Program, []parsex.Arg{
-	{Name: "help", Match: "--AUTO", Desc: "print help message and exit"},
+var CLI = parsex.New("example", Program, []parsex.Arg{
 	{Name: "version", Match: "--AUTO,-v", Desc: "print version and exit"},
 	{Name: "amount", Match: "--AUTO,-A", Desc: "amount of random stuff", Check: parsex.ValidInt},
 	{Name: "build", Match: "build", Desc: "build subcommand", Branch: BuildCLI},
 })
 
+func TestHelp(test *testing.T) {
+	fmt.Println("--- VERIFY HELP MESSAGE:")
+	err := CLI.FromString("--help").Run()
+	if err != nil {
+		test.Fatal(err)
+	}
+}
+
 func TestRun(test *testing.T) {
-	if err := CLI.FromString("--help -v -A69 build --output=/tmp/ test").Run(); err != nil {
+	if err := CLI.FromString("-v -A69 build --output=/tmp/ test").Run(); err != nil {
 		test.Fatal(err)
 	}
 
-	if err := CLI.FromSlice([]string{"--help", "-v", "--amount", "69", "build", "-o", "/tmp/", "test"}).Run(); err != nil {
+	if err := CLI.FromString("-v -A69 -- build --output=/tmp/ test").Run(); err != nil {
+		test.Fatal(err)
+	}
+
+	if err := CLI.FromSlice([]string{"-v", "--amount", "69", "build", "-o", "/tmp/", "test"}).Run(); err != nil {
 		test.Fatal(err)
 	}
 
