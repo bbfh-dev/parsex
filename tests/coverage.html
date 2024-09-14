@@ -55,15 +55,17 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/bbfh-dev/parsex/parsex/cli.go (79.2%)</option>
+				<option value="file0">github.com/bbfh-dev/parsex/parsex/cli.go (87.3%)</option>
 				
 				<option value="file1">github.com/bbfh-dev/parsex/parsex/cli_args.go (96.0%)</option>
 				
-				<option value="file2">github.com/bbfh-dev/parsex/parsex/cli_valid.go (85.7%)</option>
+				<option value="file2">github.com/bbfh-dev/parsex/parsex/cli_help.go (100.0%)</option>
 				
-				<option value="file3">github.com/bbfh-dev/parsex/parsex/input.go (100.0%)</option>
+				<option value="file3">github.com/bbfh-dev/parsex/parsex/cli_valid.go (85.7%)</option>
 				
-				<option value="file4">github.com/bbfh-dev/parsex/parsex/internal/errors.go (66.7%)</option>
+				<option value="file4">github.com/bbfh-dev/parsex/parsex/input.go (100.0%)</option>
+				
+				<option value="file5">github.com/bbfh-dev/parsex/parsex/internal/errors.go (66.7%)</option>
 				
 				</select>
 			</div>
@@ -92,6 +94,7 @@ type Program func(in Input, args ...string) error
 
 // The primary handler for a single sub-command
 type CLI struct {
+        Name       string
         cliProgram Program
         cliArgs    []Arg
         argToIndex map[string]int
@@ -101,9 +104,11 @@ type CLI struct {
 }
 
 // Create a new program. Use for both main entry and branches (sub-commands)
-func New(program Program, args []Arg) *CLI <span class="cov8" title="1">{
-        args = applyAutoFlags(args)
+func New(name string, program Program, args []Arg) *CLI <span class="cov8" title="1">{
+        prepend := []Arg{{Name: "help", Match: "--AUTO", Desc: "print help message and exit"}}
+        args = applyAutoFlags(append(prepend, args...))
         return &amp;CLI{
+                Name:       name,
                 cliProgram: program,
                 cliArgs:    args,
                 argToIndex: argToIndexMap(args),
@@ -113,12 +118,19 @@ func New(program Program, args []Arg) *CLI <span class="cov8" title="1">{
         }
 }</span>
 
+func (cli *CLI) reset() *CLI <span class="cov8" title="1">{
+        cli.input = Input{}
+        cli.inArgs = []string{}
+
+        return cli
+}</span>
+
 // Set input arguments from a string
 //
 // Example: `-o /tmp/ --verbose`
 func (cli *CLI) FromString(str string) *CLI <span class="cov8" title="1">{
         cli.arguments = simplifyArgs(strings.Split(str, " "))
-        return cli
+        return cli.reset()
 }</span>
 
 // Set input arguments from os.Args (provided from calling the binary)
@@ -126,13 +138,13 @@ func (cli *CLI) FromArgs() *CLI <span class="cov0" title="0">{
         if len(os.Args) &gt; 1 </span><span class="cov0" title="0">{
                 cli.arguments = simplifyArgs(os.Args[1:])
         }</span>
-        <span class="cov0" title="0">return cli</span>
+        <span class="cov0" title="0">return cli.reset()</span>
 }
 
 // Set input arguments directly
 func (cli *CLI) FromSlice(args []string) *CLI <span class="cov8" title="1">{
         cli.arguments = simplifyArgs(args)
-        return cli
+        return cli.reset()
 }</span>
 
 // Parse input arguments and execute the correct program
@@ -147,11 +159,11 @@ func (cli *CLI) Run() error <span class="cov8" title="1">{
                         )
                 }</span>
 
-                <span class="cov8" title="1">if cli.arguments[i] == "--" </span><span class="cov0" title="0">{
-                        if len(cli.arguments) &gt; i+1 </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if cli.arguments[i] == "--" </span><span class="cov8" title="1">{
+                        if len(cli.arguments) &gt; i+1 </span><span class="cov8" title="1">{
                                 cli.inArgs = append(cli.inArgs, cli.arguments[i+1:]...)
                         }</span>
-                        <span class="cov0" title="0">break</span>
+                        <span class="cov8" title="1">break</span>
                 }
 
                 <span class="cov8" title="1">arg, err := cli.findArg(cli.arguments[i], i)
@@ -181,6 +193,11 @@ func (cli *CLI) Run() error <span class="cov8" title="1">{
 
                 <span class="cov8" title="1">i += diff</span>
         }
+
+        <span class="cov8" title="1">if cli.input.Has("help") </span><span class="cov8" title="1">{
+                fmt.Println(cli.Help(cli.Name))
+                return nil
+        }</span>
 
         <span class="cov8" title="1">return cli.cliProgram(cli.input, cli.inArgs...)</span>
 }
@@ -299,6 +316,46 @@ func simplifyArgs(args []string) []string <span class="cov8" title="1">{
 		
 		<pre class="file" id="file2" style="display: none">package parsex
 
+import "strings"
+
+const HELP_ARG_WIDTH = 16
+
+func (cli *CLI) Help(cmd string) string <span class="cov8" title="1">{
+        var builder strings.Builder
+
+        builder.WriteString("Usage: " + cmd + " [OPTIONS] &lt;ARGUMENTS...&gt;\n")
+
+        var commandsBuilder strings.Builder
+        var optionsBuilder strings.Builder
+
+        for _, arg := range cli.cliArgs </span><span class="cov8" title="1">{
+                if arg.Branch == nil </span><span class="cov8" title="1">{
+                        optionsBuilder.WriteString("    " + arg.Match)
+                        optionsBuilder.WriteString(strings.Repeat(" ", HELP_ARG_WIDTH-len(arg.Match)))
+                        optionsBuilder.WriteString(arg.Desc + "\n")
+                }</span> else<span class="cov8" title="1"> {
+                        commandsBuilder.WriteString("    " + arg.Match)
+                        commandsBuilder.WriteString(strings.Repeat(" ", HELP_ARG_WIDTH-len(arg.Match)))
+                        commandsBuilder.WriteString(arg.Desc + "\n")
+                }</span>
+        }
+
+        <span class="cov8" title="1">if len(commandsBuilder.String()) &gt; 0 </span><span class="cov8" title="1">{
+                builder.WriteString("\nCommands:\n")
+                builder.WriteString(commandsBuilder.String())
+        }</span>
+
+        <span class="cov8" title="1">if len(optionsBuilder.String()) &gt; 0 </span><span class="cov8" title="1">{
+                builder.WriteString("\nOptions:\n")
+                builder.WriteString(optionsBuilder.String())
+        }</span>
+
+        <span class="cov8" title="1">return builder.String()</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package parsex
+
 import (
         "path/filepath"
         "strconv"
@@ -330,7 +387,7 @@ func ValidInt(in string) (string, bool) <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package parsex
+		<pre class="file" id="file4" style="display: none">package parsex
 
 // Input is a map of flags/options that were provided to the program.
 //
@@ -348,7 +405,7 @@ func (input Input) Has(key string) bool <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file4" style="display: none">package internal
+		<pre class="file" id="file5" style="display: none">package internal
 
 import "fmt"
 
