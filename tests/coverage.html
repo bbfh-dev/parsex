@@ -63,7 +63,7 @@
 				
 				<option value="file3">github.com/bbfh-dev/parsex/parsex/cli_valid.go (85.7%)</option>
 				
-				<option value="file4">github.com/bbfh-dev/parsex/parsex/input.go (100.0%)</option>
+				<option value="file4">github.com/bbfh-dev/parsex/parsex/input.go (33.3%)</option>
 				
 				<option value="file5">github.com/bbfh-dev/parsex/parsex/internal/errors.go (66.7%)</option>
 				
@@ -403,6 +403,15 @@ func (input Input) Has(key string) bool <span class="cov8" title="1">{
         _, ok := input[key]
         return ok
 }</span>
+
+// Get the option value or default if unset
+func (input Input) Default(key string, defaultValue string) string <span class="cov0" title="0">{
+        val, ok := input[key]
+        if ok </span><span class="cov0" title="0">{
+                return val
+        }</span>
+        <span class="cov0" title="0">return defaultValue</span>
+}
 </pre>
 		
 		<pre class="file" id="file5" style="display: none">package internal
