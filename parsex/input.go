@@ -14,3 +14,12 @@ func (input Input) Has(key string) bool {
 	_, ok := input[key]
 	return ok
 }
+
+// Get the option value or default if unset
+func (input Input) Default(key string, defaultValue string) string {
+	val, ok := input[key]
+	if ok {
+		return val
+	}
+	return defaultValue
+}
