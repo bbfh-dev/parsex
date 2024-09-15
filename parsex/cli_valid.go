@@ -1,8 +1,10 @@
 package parsex
 
 import (
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Ensures that the argument is valid.
@@ -16,7 +18,9 @@ func ValidString(in string) (string, bool) {
 
 // Require a valid path. Transforms into an absolute path
 func ValidPath(in string) (string, bool) {
-	path, err := filepath.Abs(in)
+	path, _ := os.UserHomeDir()
+
+	path, err := filepath.Abs(strings.Replace(in, "~", path, 1))
 	if err != nil {
 		return in, false
 	}
