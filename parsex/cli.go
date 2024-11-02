@@ -142,6 +142,9 @@ func (cli *CLI) processArg(arg Arg, source []string) (int, error) {
 	}
 
 	cli.input[arg.Name] = source[1]
+	if _, ok := arg.Check(source[1]); !ok {
+		return 2, fmt.Errorf("Argument %q doesn't allow %q!", arg.Name, source[1])
+	}
 
 	return 2, nil
 }
