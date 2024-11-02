@@ -7,7 +7,7 @@ package parsex
 // Use Input.Has("<key>") to check if a flag is passed.
 //
 // Access it the same way as a map, e.g. Input["<key>"]
-type Input map[string]string
+type Input map[string]any
 
 // Check that a flag was passed
 func (input Input) Has(key string) bool {
@@ -16,10 +16,14 @@ func (input Input) Has(key string) bool {
 }
 
 // Get the option value or default if unset
-func (input Input) Default(key string, defaultValue string) string {
+func (input Input) Default(key string, defaultValue any) any {
 	val, ok := input[key]
 	if ok {
 		return val
 	}
 	return defaultValue
+}
+
+func Get[T comparable](input Input, key string) T {
+	return input[key].(T)
 }

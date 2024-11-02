@@ -2,6 +2,7 @@ package parsex_test
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/bbfh-dev/parsex/parsex"
@@ -58,17 +59,32 @@ func TestValid(test *testing.T) {
 	}
 
 	str, ok = parsex.ValidInt("15")
-	if str != "15" || !ok {
+	if str != 15 || !ok {
 		test.Fatal("This int should be valid")
 	}
 
 	str, ok = parsex.ValidInt("15a")
-	if str != "15a" || ok {
+	if str != 0 || ok {
 		test.Fatal("This int should not be valid")
 	}
 
+	str, ok = parsex.ValidUint(10, 8)("15")
+	if str != uint64(15) || !ok {
+		test.Fatalf("This uint (%s<%d>) should be valid", reflect.TypeOf(str), str)
+	}
+
+	str, ok = parsex.ValidUint(10, 8)("258")
+	if str != uint64(255) || ok {
+		test.Fatalf("This uint (%s<%d>) should be valid", reflect.TypeOf(str), str)
+	}
+
+	str, ok = parsex.ValidUint(10, 8)("15a")
+	if str != uint64(0) || ok {
+		test.Fatal("This uint should not be valid")
+	}
+
 	str, ok = parsex.ValidPath(".")
-	if len(str) == 1 || !ok {
+	if len(str.(string)) == 1 || !ok {
 		test.Fatal("This path should be valid")
 	}
 	fmt.Printf("VERIFY: \".\" is interpreted as %q\n", str)

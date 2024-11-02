@@ -141,10 +141,11 @@ func (cli *CLI) processArg(arg Arg, source []string) (int, error) {
 		return 1, fmt.Errorf("Argument %q requires a value!", arg.Name)
 	}
 
-	cli.input[arg.Name] = source[1]
-	if _, ok := arg.Check(source[1]); !ok {
+	value, ok := arg.Check(source[1])
+	if !ok {
 		return 2, fmt.Errorf("Argument %q doesn't allow %q!", arg.Name, source[1])
 	}
+	cli.input[arg.Name] = value
 
 	return 2, nil
 }
