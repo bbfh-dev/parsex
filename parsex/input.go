@@ -23,7 +23,3 @@ func (input Input) Default(key string, defaultValue any) any {
 	}
 	return defaultValue
 }
-
-func Get[T comparable](input Input, key string) T {
-	return input[key].(T)
-}
