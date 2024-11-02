@@ -18,7 +18,6 @@
 //	})
 //
 //	var CLI = parsex.New(Program, []parsex.Arg{
-//		{Name: "help", Match: "--AUTO", Desc: "print help message and exit"},
 //		{Name: "version", Match: "--AUTO,-v", Desc: "print version and exit"},
 //		{Name: "build", Match: "build", Desc: "build subcommand", Branch: BuildCLI},
 //	})
