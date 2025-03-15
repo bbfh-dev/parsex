@@ -12,7 +12,7 @@ A GNU-/POSIX-compiant CLI argument parsing and validation library.
 
 <!-- vim-markdown-toc GFM -->
 
-* [Example Usage](#example-usage)
+- [Example Usage](#example-usage)
 
 <!-- vim-markdown-toc -->
 
@@ -32,6 +32,9 @@ var CLI = parsex.
         "An example description for the command",
         // Callback function (using anonymous for demonstration, you would usually define it somewhere else)
         func(in parsex.Input) error {
+            var length int = in.Int("length")  // Example of how you can access integers
+            var debug bool = in.Has("debug")  // Example of checking flags / if options are provided
+
             return nil
         },
     ).
