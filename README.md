@@ -2,52 +2,71 @@
 
 A GNU-/POSIX-compiant CLI argument parsing and validation library.
 
+### Features
+
+- Supports flags, options and subcommands.
+- Recognizes all argument formats: `-a`, `-abc`, `-flag`, `-opt=value`, `-opt value`, `--flag`, `--flag=value`, `--flag value`.
+- Supports `--` to separate arguments.
+
+### Table of contents
+
 <!-- vim-markdown-toc GFM -->
 
-* [Argument types](#argument-types)
-    * [Short option flags](#short-option-flags)
-    * [Short options with arguments](#short-options-with-arguments)
-    * [Long option flags](#long-option-flags)
-    * [Long options with arguments](#long-options-with-arguments)
-* [Positional arguments](#positional-arguments)
-* [Development](#development)
+* [Example Usage](#example-usage)
 
 <!-- vim-markdown-toc -->
 
-# Argument types
+# Example Usage
 
-## Short option flags
+```go
+package main
 
-**Example**: `-a -b -c` / `-abc`
+import "github.com/bbfh-dev/parsex/parsex"
 
-**Usage**: Simple boolean flags
+// Use Builder pattern to construct your CLI
+var CLI = parsex.
+    New(
+        // The name of the executable / branch
+        "example",
+        // Description to show up in --help
+        "An example description for the command",
+        // Callback function (using anonymous for demonstration, you would usually define it somewhere else)
+        func(in parsex.Input) error {
+            return nil
+        },
+    ).
+    // Adds --version support to the CLI
+    SetVersion("v1.0.0-beta").
+    // These are flags, options and subcommands
+    AddOptions(
+        parsex.FlagOption{
+            Name: "debug",
+            // --debug, -debug, -D, --D will be recognized
+            Keywords: []string{"debug", "D"},
+            Desc:     "Debug this",
+        },
+        // You can create branches (subcommands) from other CLIs.
+        parsex.New("subcommand", "This is my subcommand!", SubcommandFunc).Build(),
+        parsex.ParamOption{
+            Name:     "input",
+            Keywords: []string{"input", "i"},
+            Desc:     "Input file",
+            Check:    parsex.ValidPath,
+            Optional: true,
+        },
+    ).
+    // Inform user about positional arguments
+    // Prefix with "?" if it's optional. Otherwise parsex will force user to provide it.
+    AddArguments(
+        "?optional",
+        "required",
+        "more...",
+    ).
+    // We're done here, get the CLI.
+    Build()
 
-## Short options with arguments
-
-**Example**: `-A/tmp/file.png` / `-A /tmp/file.png`
-
-**Usage**: Simple parameters with a value. If no space is provided the argument must be capitalized.
-
-## Long option flags
-
-**Example**: `--version`
-
-**Usage**: Same as [Short option flags](#short-option-flags), but taken from GNU
-
-## Long options with arguments
-
-**Example**: `--output=/tmp/file.png` / `--output /tmp/file.png`
-
-**Usage**: Same as [Short options with arguments](#short-options-with-arguments), but taken from GNU. Can be separated with either space or an equal sign (=).
-
-
-# Positional arguments
-
-Any arguments subsequent to options/flags will be parsed as positional arguments.
-
-Using `--` causes everything to the right to be threated as positional arguments.
-
-# Development
-
-- Use `make test` to run tests on the project.
-- Use `make coverage` to create tests/coverage.html with the test coverage of the library.
+func main() {
+    // Use os.Args as input, run the program and handle errors automatically
+    CLI.FromOSArgs().RunAndExit()
+}
+```
