@@ -90,10 +90,12 @@ func (cli *CLI) printHelpCommands() {
 func (cli *CLI) printHelpOptions() {
 	fmt.Print("\nOptions:")
 	for _, opt := range cli.opts {
+		matches := getMatches(opt)
 		switch opt := opt.(type) {
 		case FlagOption:
-			matches := getMatches(opt)
 			fmt.Printf("\n\t%s  %s  %s", matches, strings.Repeat(" ", max(0, cli.longestKeyword-len(matches))), opt.Describe())
+		case ParamOption:
+			fmt.Printf("\n\t%s <value>  %s  %s", matches, strings.Repeat(" ", max(0, cli.longestKeyword-len(matches)-len("<value> "))), opt.Describe())
 		}
 	}
 	fmt.Print("\n")
