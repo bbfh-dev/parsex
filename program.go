@@ -84,7 +84,7 @@ func (program *Program) Run(vArgs ...string) error {
 		return fmt.Errorf("%s (user input): %w", program.Name, err)
 	}
 
-	if err := program.Executable([]string{}); err != nil {
+	if err := program.Executable(parser.Args); err != nil {
 		return fmt.Errorf("%s: %w", program.Name, err)
 	}
 

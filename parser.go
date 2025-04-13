@@ -8,6 +8,7 @@ import (
 )
 
 type parser struct {
+	Args []string
 	// Used to keep the options sorted
 	optionKeys []string
 	// The actual option map. Map is used for more performant access
