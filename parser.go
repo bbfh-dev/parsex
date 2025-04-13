@@ -16,7 +16,11 @@ type parser struct {
 }
 
 func newParser() *parser {
-	return &parser{}
+	return &parser{
+		Args:       []string{},
+		optionKeys: []string{},
+		options:    map[string]option{},
+	}
 }
 
 func (parser *parser) LoadOptionsFrom(data any) error {
