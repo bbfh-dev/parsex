@@ -1,6 +1,10 @@
 package parsex
 
-type Executable func() error
+import (
+	"fmt"
+)
+
+type Executable func(args []string) error
 
 type Program struct {
 	// Pointer to a [var ... struct{}] containing all program options.
@@ -70,5 +74,19 @@ func (program *Program) RegisterCommand(cmd *Program) *Program {
 
 // Processes options, validates them and then runs the [.Executable] callback
 func (program *Program) Run(vArgs ...string) error {
+	parser := newParser()
+
+	if err := parser.LoadOptionsFrom(program.Data); err != nil {
+		return fmt.Errorf("%s (internal): parsex.Program.Run(...): %w", program.Name, err)
+	}
+
+	if err := parser.Parse(vArgs); err != nil {
+		return fmt.Errorf("%s (user input): %w", program.Name, err)
+	}
+
+	if err := program.Executable([]string{}); err != nil {
+		return fmt.Errorf("%s: %w", program.Name, err)
+	}
+
 	return nil
 }
