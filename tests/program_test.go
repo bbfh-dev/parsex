@@ -34,3 +34,19 @@ func TestProgramHelp(test *testing.T) {
 	assert.NilError(test, MainProgram.Run("--help"))
 	fmt.Println("```")
 }
+
+func TestProgramSubcommand(test *testing.T) {
+	testing := parsex.New(&SubOptions, func(args []string) error {
+		assert.DeepEqual(test, args, []string{"arg1"})
+		test.SkipNow()
+		return nil
+	}, "testing", "")
+	assert.NilError(test, MainProgram.RegisterCommand(testing).Run(
+		"--verbose",
+		"testing",
+		"arg1",
+		"--dir=/tmp/",
+	))
+
+	test.FailNow()
+}

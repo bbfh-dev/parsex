@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 )
@@ -54,13 +55,23 @@ func (program *Program) loadOptions() error {
 }
 
 func (program *Program) parse(vArgs []string) error {
-	if vArgs[0] == "--help" {
-		program.printHelp(os.Stdout)
-		return errCanceled
+	for i := 0; i < len(vArgs); i++ {
+		if !strings.HasPrefix(vArgs[i], "-") {
+			continue // TODO: .
+		}
+		arg := strings.TrimLeft(vArgs[i], "-")
+
+		switch arg {
+
+		case "help":
+			program.printHelp(os.Stdout)
+			return errCanceled
+
+		case "version":
+			program.printVersion(os.Stdout)
+			return errCanceled
+		}
 	}
-	if vArgs[0] == "--version" {
-		program.printVersion(os.Stdout)
-		return errCanceled
-	}
+
 	return nil
 }

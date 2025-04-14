@@ -47,9 +47,9 @@ func (program *Program) printHelp(writer io.Writer) {
 
 	if len(program.branches) != 0 {
 		fmt.Fprint(writer, "\nCommands:\n")
-		for _, branch := range program.branches {
-			fmt.Fprintf(writer, "%s%s [options] ", indent, branch.Name)
-			branch.printArgs(writer)
+		for _, branchKey := range program.branchKeys {
+			fmt.Fprintf(writer, "%s%s [options] ", indent, branchKey)
+			program.branches[branchKey].printArgs(writer)
 			fmt.Fprint(writer, "\n")
 		}
 	}

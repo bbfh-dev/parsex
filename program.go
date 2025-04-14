@@ -1,8 +1,9 @@
 package parsex
 
 import (
-	"errors"
 	"fmt"
+	"os"
+	"strings"
 )
 
 type Executable func(args []string) error
@@ -29,7 +30,8 @@ type Program struct {
 	// (Optional) Positional arguments for the program
 	posArgs []string
 	// (Optional) Other subcommands
-	branches []*Program
+	branchKeys []string
+	branches   map[string]*Program
 	// generated
 	execArgs   []string
 	optionKeys []string          // Used to keep the options sorted
@@ -45,7 +47,8 @@ func New(data any, exec Executable, name string, desc string) *Program {
 		Desc:       desc,
 		version:    "",
 		posArgs:    []string{},
-		branches:   []*Program{},
+		branchKeys: []string{},
+		branches:   map[string]*Program{},
 		execArgs:   []string{},
 		optionKeys: []string{},
 		options: map[string]option{
@@ -79,7 +82,8 @@ func (program *Program) RequireArgs(args ...string) *Program {
 //
 // Prints the command in --help menu.
 func (program *Program) RegisterCommand(cmd *Program) *Program {
-	program.branches = append(program.branches, cmd)
+	program.branchKeys = append(program.branchKeys, cmd.Name)
+	program.branches[cmd.Name] = cmd
 	return program
 }
 
@@ -89,11 +93,30 @@ func (program *Program) Run(vArgs ...string) error {
 		return fmt.Errorf("%s (internal): parsex.Program.Run(...): %w", program.Name, err)
 	}
 
-	if err := program.parse(vArgs); err != nil {
-		if errors.Is(err, errCanceled) {
+	for i := 0; i < len(vArgs); i++ {
+		if !strings.HasPrefix(vArgs[i], "-") {
+			// If it's a subcommand simply branch out
+			branch, ok := program.branches[vArgs[i]]
+			if ok {
+				return branch.Run(vArgs[i+1:]...)
+			}
+
+			// Default to a argument
+			program.execArgs = append(program.execArgs, vArgs[i])
+			continue
+		}
+		arg := strings.TrimLeft(vArgs[i], "-")
+
+		switch arg {
+
+		case "help":
+			program.printHelp(os.Stdout)
+			return nil
+
+		case "version":
+			program.printVersion(os.Stdout)
 			return nil
 		}
-		return fmt.Errorf("%s (user input): %w", program.Name, err)
 	}
 
 	if program.Executable == nil {
