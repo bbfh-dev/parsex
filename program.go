@@ -116,6 +116,62 @@ func (program *Program) Run(vArgs ...string) error {
 		case "version":
 			program.printVersion(os.Stdout)
 			return nil
+
+		default:
+			if strings.Contains(arg, "=") {
+				parts := strings.SplitN(arg, "=", 2)
+				key, value := parts[0], parts[1]
+
+				option, ok := program.options[key]
+				if !ok {
+					return fmt.Errorf(
+						"%s (user input): unknown option %q. Use --help for usage information",
+						program.Name,
+						"--"+key,
+					)
+				}
+
+				if option.IsFlag() {
+					return fmt.Errorf(
+						"%s (user input): flag %q cannot be set to anything. Provide it as is",
+						program.Name,
+						"--"+key,
+					)
+				}
+
+				if err := option.Set(value); err != nil {
+					return fmt.Errorf("%s (user input): option %q: %w", program.Name, "--"+key, err)
+				}
+				i++
+				continue
+			}
+
+			option, ok := program.options[arg]
+			if !ok {
+				return fmt.Errorf(
+					"%s (user input): unknown option %q. Use --help for usage information",
+					program.Name,
+					vArgs[i],
+				)
+			}
+
+			if option.IsFlag() {
+				option.Ref.SetBool(true)
+				continue
+			}
+			if i+1 >= len(vArgs) {
+				return fmt.Errorf(
+					"%s (user input): option %q requires a value of type <%s>",
+					program.Name,
+					vArgs[i],
+					option.Type,
+				)
+			}
+
+			if err := option.Set(vArgs[i+1]); err != nil {
+				return fmt.Errorf("%s (user input): option %q: %w", program.Name, vArgs[i], err)
+			}
+			i++
 		}
 	}
 
