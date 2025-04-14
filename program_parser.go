@@ -1,30 +1,18 @@
 package parsex
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/iancoleman/strcase"
 )
 
-type parser struct {
-	Args []string
-	// Used to keep the options sorted
-	optionKeys []string
-	// The actual option map. Map is used for more performant access
-	options map[string]option
-}
+var errCanceled = errors.New("parsex:err/cancelled")
 
-func newParser() *parser {
-	return &parser{
-		Args:       []string{},
-		optionKeys: []string{},
-		options:    map[string]option{},
-	}
-}
-
-func (parser *parser) LoadOptionsFrom(data any) error {
-	typePtr := reflect.TypeOf(data)
+func (program *Program) loadOptions() error {
+	typePtr := reflect.TypeOf(program.Data)
 	if typePtr.Kind() != reflect.Pointer {
 		return fmt.Errorf("Program.Data must be a pointer. Got %q instead", typePtr)
 	}
@@ -34,9 +22,14 @@ func (parser *parser) LoadOptionsFrom(data any) error {
 		return fmt.Errorf("Program.Data must point to a struct{}. Got %q instead", typeElem)
 	}
 
-	valueElem := reflect.ValueOf(data).Elem()
+	valueElem := reflect.ValueOf(program.Data).Elem()
 	numOfFields := typeElem.NumField()
-	parser.optionKeys = make([]string, numOfFields)
+	program.optionKeys = make([]string, 0, numOfFields+2)
+
+	program.optionKeys = append(program.optionKeys, "help")
+	if program.version != "" {
+		program.optionKeys = append(program.optionKeys, "version")
+	}
 
 	for i := range numOfFields {
 		fieldType := typeElem.Field(i)
@@ -47,8 +40,8 @@ func (parser *parser) LoadOptionsFrom(data any) error {
 		}
 
 		name := strcase.ToKebab(fieldType.Name)
-		parser.optionKeys[i] = name
-		parser.options[name] = option{
+		program.optionKeys = append(program.optionKeys, name)
+		program.options[name] = option{
 			Name: name,
 			Alt:  fieldType.Tag.Get("alt"),
 			Desc: fieldType.Tag.Get("desc"),
@@ -60,6 +53,14 @@ func (parser *parser) LoadOptionsFrom(data any) error {
 	return nil
 }
 
-func (parser *parser) Parse(vArgs []string) error {
+func (program *Program) parse(vArgs []string) error {
+	if vArgs[0] == "--help" {
+		program.printHelp(os.Stdout)
+		return errCanceled
+	}
+	if vArgs[0] == "--version" {
+		program.printVersion(os.Stdout)
+		return errCanceled
+	}
 	return nil
 }

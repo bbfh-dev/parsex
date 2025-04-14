@@ -1,6 +1,7 @@
 package parsex
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -29,6 +30,10 @@ type Program struct {
 	posArgs []string
 	// (Optional) Other subcommands
 	branches []*Program
+	// generated
+	execArgs   []string
+	optionKeys []string          // Used to keep the options sorted
+	options    map[string]option // Map is used for more performant access
 }
 
 // NOTE: Check [parsex.Program] docs
@@ -41,6 +46,12 @@ func New(data any, exec Executable, name string, desc string) *Program {
 		version:    "",
 		posArgs:    []string{},
 		branches:   []*Program{},
+		execArgs:   []string{},
+		optionKeys: []string{},
+		options: map[string]option{
+			"help":    helpOption,
+			"version": versionOption,
+		},
 	}
 }
 
@@ -74,17 +85,25 @@ func (program *Program) RegisterCommand(cmd *Program) *Program {
 
 // Processes options, validates them and then runs the [.Executable] callback
 func (program *Program) Run(vArgs ...string) error {
-	parser := newParser()
-
-	if err := parser.LoadOptionsFrom(program.Data); err != nil {
+	if err := program.loadOptions(); err != nil {
 		return fmt.Errorf("%s (internal): parsex.Program.Run(...): %w", program.Name, err)
 	}
 
-	if err := parser.Parse(vArgs); err != nil {
+	if err := program.parse(vArgs); err != nil {
+		if errors.Is(err, errCanceled) {
+			return nil
+		}
 		return fmt.Errorf("%s (user input): %w", program.Name, err)
 	}
 
-	if err := program.Executable(parser.Args); err != nil {
+	if program.Executable == nil {
+		return fmt.Errorf(
+			"%s (internal): parsex.New(...): Executable function is nil",
+			program.Name,
+		)
+	}
+
+	if err := program.Executable(program.execArgs); err != nil {
 		return fmt.Errorf("%s: %w", program.Name, err)
 	}
 
