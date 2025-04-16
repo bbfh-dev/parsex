@@ -120,7 +120,7 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 	if lenProv < lenReq {
 		var builder strings.Builder
 		fmt.Fprintf(&builder,
-			"%s: %d positional argument(s) is required: `",
+			"%s: %d positional argument(s) is/are required: `",
 			runtime.name,
 			lenReq,
 		)
