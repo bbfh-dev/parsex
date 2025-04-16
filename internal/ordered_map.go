@@ -17,6 +17,10 @@ func (omap *OrderedMap[V]) IsEmpty() bool {
 	return len(omap.keys) == 0
 }
 
+func (omap *OrderedMap[V]) Get(key string) (V, bool) {
+	value, ok := omap.values[key]
+	return value, ok
+}
 
 func (omap *OrderedMap[V]) Clear() {
 	omap.keys = []string{}
