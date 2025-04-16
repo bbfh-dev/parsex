@@ -82,3 +82,10 @@ func (option Option) Set(value string) error {
 
 	return fmt.Errorf("(internal) can't set value of an option of type %q", option.Type)
 }
+
+func (option Option) SetFlag() {
+	if option.Type.Kind() != reflect.Bool {
+		panic("trying to call SetFlag() on an option that isn't actually a flag")
+	}
+	option.Ref.SetBool(true)
+}
