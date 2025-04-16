@@ -23,6 +23,7 @@ func (runtime *runtimeType) preprocess() error {
 	valueElem := reflect.ValueOf(runtime.data).Elem()
 	numOfFields := typeElem.NumField()
 
+	runtime.genOptions.Clear()
 	runtime.genOptions.Add("help", internal.HelpOption)
 	if runtime.version != "" {
 		runtime.genOptions.Add("version", internal.VersionOption)
