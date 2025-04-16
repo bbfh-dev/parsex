@@ -10,6 +10,10 @@ import (
 )
 
 func (runtime *runtimeType) preprocess() error {
+	if runtime.data == nil {
+		return nil
+	}
+
 	typePtr := reflect.TypeOf(runtime.data)
 	if typePtr.Kind() != reflect.Pointer {
 		return fmt.Errorf("Program.Data must be a pointer. Got %q instead", typePtr)
