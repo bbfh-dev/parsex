@@ -48,6 +48,9 @@ func (runtime *runtimeType) preprocess() error {
 				Ref:  &fieldValue,
 			},
 		)
+		if alt := fieldType.Tag.Get("alt"); alt != "" {
+			runtime.genOptionAlts[alt] = name
+		}
 	}
 
 	return nil

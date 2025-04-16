@@ -12,7 +12,7 @@ var testOptions struct {
 	Verbose    bool   `alt:"v" desc:"Print verbose debug information"`
 	Debug      bool   `alt:"d" desc:"Run the program in DEBUG mode"`
 	Input      string `desc:"Some input file"`
-	SomeNumber int    `desc:"A valid integer"`
+	SomeNumber int    `alt:"N" desc:"A valid integer"`
 }
 
 var buildProgram = parsex.Program{
@@ -56,9 +56,16 @@ Options:
         # Run the program in DEBUG mode
     --input <string>
         # Some input file
-    --some-number <int>
+    --some-number, -N <int>
         # A valid integer
 `
+
+func setup() {
+	testOptions.Verbose = false
+	testOptions.Debug = false
+	testOptions.Input = ""
+	testOptions.SomeNumber = 15
+}
 
 func TestProgramVersion(test *testing.T) {
 	var buffer bytes.Buffer
@@ -72,6 +79,29 @@ func TestProgramHelp(test *testing.T) {
 	assert.DeepEqual(test, buffer.String(), ExpectedHelp)
 }
 
-func TestProgramRun(test *testing.T) {
-	assert.NilError(test, testProgram.Run([]string{}))
+func TestProgramLongOptions(test *testing.T) {
+	setup()
+	assert.NilError(test, testProgram.Run([]string{
+		"--verbose",
+		"--debug",
+		"--input=/tmp/filename",
+		"--some-number", "15",
+	}))
+	assert.DeepEqual(test, testOptions.Verbose, true)
+	assert.DeepEqual(test, testOptions.Debug, true)
+	assert.DeepEqual(test, testOptions.Input, "/tmp/filename")
+	assert.DeepEqual(test, testOptions.SomeNumber, 15)
+}
+
+func TestProgramClusterOptions(test *testing.T) {
+	setup()
+	assert.NilError(test, testProgram.Run([]string{
+		"-vd",
+		"-input=/tmp/filename",
+		"-some-number", "15",
+	}))
+	assert.DeepEqual(test, testOptions.Verbose, true)
+	assert.DeepEqual(test, testOptions.Debug, true)
+	assert.DeepEqual(test, testOptions.Input, "/tmp/filename")
+	assert.DeepEqual(test, testOptions.SomeNumber, 15)
 }
