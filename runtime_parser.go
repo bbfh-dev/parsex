@@ -1,8 +1,9 @@
 package parsex
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/bbfh-dev/parsex/internal/cerr"
 )
 
 // processLongOption handles options starting with "--".
@@ -20,11 +21,10 @@ func (runtime *runtimeType) processLongOption(arg string, i *int, inputArgs []st
 	name = optionStr
 	option, exists := runtime.genOptions.Get(name)
 	if !exists {
-		return fmt.Errorf(
-			"%s: unknown option %q. Refer to --help for usage information",
-			runtime.name,
-			arg,
-		)
+		return cerr.UnknownOption{
+			Name:   runtime.name,
+			Option: arg,
+		}
 	}
 	if option.IsFlag() {
 		option.SetFlag()
@@ -33,11 +33,10 @@ func (runtime *runtimeType) processLongOption(arg string, i *int, inputArgs []st
 
 	*i++
 	if *i >= len(inputArgs) {
-		return fmt.Errorf(
-			"%s: option %q requires a value. Refer to --help for usage information",
-			runtime.name,
-			arg,
-		)
+		return cerr.OptionNeedsValue{
+			Name:   runtime.name,
+			Option: arg,
+		}
 	}
 	value = inputArgs[*i]
 	return runtime.setOption(name, value)
@@ -64,11 +63,10 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 		}
 		*i++
 		if *i >= len(inputArgs) {
-			return fmt.Errorf(
-				"%s: option %q requires a value. Refer to --help for usage information",
-				runtime.name,
-				arg,
-			)
+			return cerr.OptionNeedsValue{
+				Name:   runtime.name,
+				Option: arg,
+			}
 		}
 		return runtime.setOption(name, inputArgs[*i])
 	}
@@ -78,20 +76,18 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 		flagKey := string(char)
 		mapped, exists := runtime.genOptionAlts[flagKey]
 		if !exists {
-			return fmt.Errorf(
-				"%s: unknown option or cluster %q. Refer to --help for usage information",
-				runtime.name,
-				arg,
-			)
+			return cerr.UnknownOptionCluster{
+				Name:   runtime.name,
+				Option: arg,
+			}
 		}
 		option, exists := runtime.genOptions.Get(mapped)
 		if !exists || !option.IsFlag() {
-			return fmt.Errorf(
-				"%s: cluster %q can only contain flags but %q is found. Refer to --help for usage information",
-				runtime.name,
-				arg,
-				mapped,
-			)
+			return cerr.ClusterOnlyFlags{
+				Name:   runtime.name,
+				Option: arg,
+				Mapped: mapped,
+			}
 		}
 		option.SetFlag()
 	}
@@ -103,18 +99,21 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 func (runtime *runtimeType) setOption(name, value string) error {
 	option, exists := runtime.genOptions.Get(name)
 	if !exists {
-		return fmt.Errorf(
-			"%s: unknown option %q. Refer to --help for usage information",
-			runtime.name,
-			"--"+name,
-		)
+		return cerr.UnknownOption{
+			Name:   runtime.name,
+			Option: "--" + name,
+		}
 	}
 	if option.IsFlag() {
 		option.SetFlag()
 		return nil
 	}
 	if err := option.Set(value); err != nil {
-		return fmt.Errorf("%s: setting option %q: %w", runtime.name, "--"+name, err)
+		return cerr.SettingOption{
+			Name:   runtime.name,
+			Option: "--" + name,
+			Err:    err,
+		}
 	}
 	return nil
 }

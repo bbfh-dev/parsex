@@ -1,12 +1,11 @@
 package parsex
 
 import (
-	"errors"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/bbfh-dev/parsex/internal"
+	"github.com/bbfh-dev/parsex/internal/cerr"
 )
 
 // [runtimeType] is created from [Program] and it's what actually handles everything
@@ -81,7 +80,10 @@ func (runtime *runtimeType) RegisterCommand(command *runtimeType) *runtimeType {
 func (runtime *runtimeType) Run(inputArgs []string) error {
 	runtime.exec.Clear()
 	if err := runtime.preprocess(); err != nil {
-		return fmt.Errorf("%s (internal/preprocessor): %w", runtime.name, err)
+		return cerr.DuringPreprocessing{
+			Name: runtime.name,
+			Err:  err,
+		}
 	}
 
 	for i := 0; i < len(inputArgs); i++ {
@@ -118,27 +120,25 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 	lenProv := len(runtime.exec.Args)
 	lenReq := len(runtime.genReqPosArgs)
 	if lenProv < lenReq {
-		var builder strings.Builder
-		fmt.Fprintf(&builder,
-			"%s: %d positional argument(s) is/are required: `",
-			runtime.name,
-			lenReq,
-		)
-		runtime.printArgs(&builder)
-		fmt.Fprintf(
-			&builder,
-			"`, but provided only %d `%s`",
-			lenProv,
-			runtime.exec.Args,
-		)
-		return errors.New(builder.String())
+		return cerr.NotEnoughArgs{
+			Name:          runtime.name,
+			LenOfRequired: lenReq,
+			LenOfProvided: lenProv,
+			ArgPrinter:    runtime.printArgs,
+			Args:          runtime.exec.Args,
+		}
 	}
 
 	if runtime.exec.Function == nil {
-		return fmt.Errorf("%s (internal): runtime.Exec function is nil", runtime.name)
+		return cerr.ExecIsNil{
+			Name: runtime.name,
+		}
 	}
 	if err := runtime.exec.Run(); err != nil {
-		return fmt.Errorf("%s: %w", runtime.name, err)
+		return cerr.DuringExecution{
+			Name: runtime.name,
+			Err:  err,
+		}
 	}
 	return nil
 }

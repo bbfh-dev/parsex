@@ -1,11 +1,11 @@
 package parsex
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
 	"github.com/bbfh-dev/parsex/internal"
+	"github.com/bbfh-dev/parsex/internal/cerr"
 	"github.com/iancoleman/strcase"
 )
 
@@ -16,12 +16,12 @@ func (runtime *runtimeType) preprocess() error {
 
 	typePtr := reflect.TypeOf(runtime.data)
 	if typePtr.Kind() != reflect.Pointer {
-		return fmt.Errorf("Program.Data must be a pointer. Got %q instead", typePtr)
+		return cerr.DataMustBePointer{Type: typePtr}
 	}
 
 	typeElem := typePtr.Elem()
 	if typeElem.Kind() != reflect.Struct {
-		return fmt.Errorf("Program.Data must point to a struct{}. Got %q instead", typeElem)
+		return cerr.DataMustPointToStruct{Type: typePtr}
 	}
 
 	valueElem := reflect.ValueOf(runtime.data).Elem()
