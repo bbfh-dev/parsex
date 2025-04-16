@@ -17,6 +17,10 @@ func NewContextExecutable(exec Executable) *ContextExecutable {
 	}
 }
 
+func (executable *ContextExecutable) Clear() {
+	executable.Args = []string{}
+}
+
 // Saves the argument in the executable context
 func (executable *ContextExecutable) AddArg(arg string) *ContextExecutable {
 	executable.Args = append(executable.Args, arg)

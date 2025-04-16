@@ -72,6 +72,7 @@ func (runtime *runtimeType) RegisterCommand(command *runtimeType) *runtimeType {
 
 // Run processes options, validates them, and then executes the command.
 func (runtime *runtimeType) Run(inputArgs []string) error {
+	runtime.exec.Clear()
 	if err := runtime.preprocess(); err != nil {
 		return fmt.Errorf("%s (internal/preprocessor): %w", runtime.name, err)
 	}
