@@ -68,7 +68,7 @@ func TestProgramVersion(test *testing.T) {
 
 func TestProgramHelp(test *testing.T) {
 	var buffer bytes.Buffer
-	testProgram.PrintHelp(&buffer)
+	testProgram.SafePrintHelp(&buffer)
 	assert.DeepEqual(test, buffer.String(), ExpectedHelp)
 }
 

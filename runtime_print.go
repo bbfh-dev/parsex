@@ -19,7 +19,7 @@ func (runtime *runtimeType) PrintVersion(writer io.Writer) {
 }
 
 // Performs preprocessing and prints the help text block
-func (runtime *runtimeType) PrintHelp(writer io.Writer) error {
+func (runtime *runtimeType) SafePrintHelp(writer io.Writer) error {
 	if err := runtime.preprocess(); err != nil {
 		return err
 	}
