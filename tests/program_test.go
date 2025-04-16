@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"log"
 	"testing"
 
 	"github.com/bbfh-dev/parsex"
@@ -19,14 +20,18 @@ var buildProgram = parsex.Program{
 	Data: nil,
 	Name: "build",
 	Desc: "This is an example subcommand that builds something",
-	Exec: nil,
-}.Runtime().SetPosArgs("filename")
+	Exec: func(args []string) error {
+		log.Println("--- * Running test.BuildProgram with args", args)
+		return nil
+	},
+}.Runtime().SetPosArgs("filename?")
 
 var testProgram = parsex.Program{
 	Data: &testOptions,
 	Name: "example",
 	Desc: "This is an example program",
 	Exec: func(args []string) error {
+		log.Println("--- * Running test.MainProgram with args", args)
 		return nil
 	},
 }.Runtime().
@@ -43,7 +48,7 @@ Usage:
     example [options] <arg1> <arg2> <argN...> 
 
 Commands:
-    build [options] <filename> 
+    build [options] <filename?> 
 
 Options:
     --help
@@ -86,6 +91,7 @@ func TestProgramLongOptions(test *testing.T) {
 		"--debug",
 		"--input=/tmp/filename",
 		"--some-number", "15",
+		"arg1", "arg2", "arg3",
 	}))
 	assert.DeepEqual(test, testOptions.Verbose, true)
 	assert.DeepEqual(test, testOptions.Debug, true)
@@ -99,9 +105,20 @@ func TestProgramClusterOptions(test *testing.T) {
 		"-vd",
 		"-input=/tmp/filename",
 		"-some-number", "15",
+		"arg1", "arg2", "arg3",
 	}))
 	assert.DeepEqual(test, testOptions.Verbose, true)
 	assert.DeepEqual(test, testOptions.Debug, true)
 	assert.DeepEqual(test, testOptions.Input, "/tmp/filename")
 	assert.DeepEqual(test, testOptions.SomeNumber, 15)
+}
+
+func TestProgramSubcommand(test *testing.T) {
+	setup()
+	assert.NilError(test, testProgram.Run([]string{
+		"-vd",
+		"build",
+	}))
+	assert.DeepEqual(test, testOptions.Verbose, true)
+	assert.DeepEqual(test, testOptions.Debug, true)
 }

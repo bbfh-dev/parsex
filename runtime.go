@@ -1,6 +1,7 @@
 package parsex
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -26,6 +27,7 @@ type runtimeType struct {
 	// --- Internal
 	genOptions    *internal.OrderedMap[internal.Option]
 	genOptionAlts map[string]string
+	genReqPosArgs []string
 }
 
 func newRuntime(program *Program) *runtimeType {
@@ -59,6 +61,11 @@ func (runtime *runtimeType) SetVersion(version string) *runtimeType {
 // Prints the arguments in --help menu as provided.
 func (runtime *runtimeType) SetPosArgs(args ...string) *runtimeType {
 	runtime.posArgs = args
+	for _, arg := range args {
+		if !strings.Contains(arg, "?") {
+			runtime.genReqPosArgs = append(runtime.genReqPosArgs, arg)
+		}
+	}
 	return runtime
 }
 
@@ -107,6 +114,24 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 		if err != nil {
 			return err
 		}
+	}
+	lenProv := len(runtime.exec.Args)
+	lenReq := len(runtime.genReqPosArgs)
+	if lenProv < lenReq {
+		var builder strings.Builder
+		fmt.Fprintf(&builder,
+			"%s: %d positional argument(s) is required: `",
+			runtime.name,
+			lenReq,
+		)
+		runtime.printArgs(&builder)
+		fmt.Fprintf(
+			&builder,
+			"`, but provided only %d `%s`",
+			lenProv,
+			runtime.exec.Args,
+		)
+		return errors.New(builder.String())
 	}
 
 	if runtime.exec.Function == nil {
