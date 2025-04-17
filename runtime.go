@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bbfh-dev/parsex/internal"
+	"github.com/bbfh-dev/parsex/v2/internal"
 )
 
 // [runtimeType] is created from [Program] and it's what actually handles everything

@@ -1,7 +1,7 @@
 package parsex
 
 import (
-	"github.com/bbfh-dev/parsex/internal"
+	"github.com/bbfh-dev/parsex/v2/internal"
 )
 
 type Program struct {

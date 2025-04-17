@@ -1,4 +1,4 @@
-module github.com/bbfh-dev/parsex
+module github.com/bbfh-dev/parsex/v2
 
 go 1.24.1
 

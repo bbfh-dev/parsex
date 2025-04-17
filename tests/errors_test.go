@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/bbfh-dev/parsex"
+	"github.com/bbfh-dev/parsex/v2"
 	"gotest.tools/assert"
 )
 

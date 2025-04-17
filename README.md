@@ -24,7 +24,7 @@ package main
 import (
     "os"
 
-    "github.com/bbfh-dev/parsex"
+    "github.com/bbfh-dev/parsex/v2"
 )
 
 var Options struct {

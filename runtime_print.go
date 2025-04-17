@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/bbfh-dev/parsex/internal"
+	"github.com/bbfh-dev/parsex/v2/internal"
 )
 
 var indent = strings.Repeat(" ", 4)
