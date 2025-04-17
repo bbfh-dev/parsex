@@ -41,3 +41,5 @@ func TestErrDataIsStruct(test *testing.T) {
 		test.Fatal("error must be DuringPreprocessing{}")
 	}
 }
+
+// TODO: Test all other errors
