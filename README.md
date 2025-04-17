@@ -1,75 +1,67 @@
 # Parsex
 
-A GNU-/POSIX-compiant CLI argument parsing and validation library.
+Parsex `/pɑːrsɛks/` — a GNU-/POSIX-compiant CLI argument parsing and validation library.
 
-### Features
+## Features
 
-- Supports flags, options and subcommands.
+- Supports `--flags`, `--options <value>` and `subcommands`.
 - Recognizes all argument formats: `-a`, `-abc`, `-flag`, `-opt=value`, `-opt value`, `--flag`, `--flag=value`, `--flag value`.
 - Supports `--` to separate arguments.
 
-### Table of contents
+## Table of contents
 
 <!-- vim-markdown-toc GFM -->
 
-- [Example Usage](#example-usage)
+* [Example usage](#example-usage)
 
 <!-- vim-markdown-toc -->
 
-# Example Usage
+## Example usage
 
 ```go
 package main
 
-import "github.com/bbfh-dev/parsex/parsex"
+import (
+    "os"
 
-// Use Builder pattern to construct your CLI
-var CLI = parsex.
-    New(
-        // The name of the executable / branch
-        "example",
-        // Description to show up in --help
-        "An example description for the command",
-        // Callback function (using anonymous for demonstration, you would usually define it somewhere else)
-        func(in parsex.Input) error {
-            var length int = in.Int("length")  // Example of how you can access integers
-            var debug bool = in.Has("debug")  // Example of checking flags / if options are provided
+    "github.com/bbfh-dev/parsex"
+)
 
-            return nil
-        },
-    ).
-    // Adds --version support to the CLI
-    SetVersion("v1.0.0-beta").
-    // These are flags, options and subcommands
-    AddOptions(
-        parsex.FlagOption{
-            Name: "debug",
-            // --debug, -debug, -D, --D will be recognized
-            Keywords: []string{"debug", "D"},
-            Desc:     "Debug this",
-        },
-        // You can create branches (subcommands) from other CLIs.
-        parsex.New("subcommand", "This is my subcommand!", SubcommandFunc).Build(),
-        parsex.ParamOption{
-            Name:     "input",
-            Keywords: []string{"input", "i"},
-            Desc:     "Input file",
-            Check:    parsex.ValidPath,
-            Optional: true,
-        },
-    ).
-    // Inform user about positional arguments
-    // Prefix with "?" if it's optional. Otherwise parsex will force user to provide it.
-    AddArguments(
-        "?optional",
-        "required",
-        "more...",
-    ).
-    // We're done here, get the CLI.
-    Build()
+var Options struct {
+    Verbose    bool   `alt:"v" desc:"Print verbose debug information"`
+    Debug      bool   `alt:"d" desc:"Run the program in DEBUG mode"`
+    Input      string `desc:"Some input file"`
+    SomeNumber int    `alt:"N" desc:"A valid integer"`
+}
+
+var program = parsex.Program{
+    // You can set it to `nil` if you don't have any options
+    Data: &Options,
+    Name: "example",
+    Desc: "This is an example program",
+    Exec: func(args []string) error {
+        // I use an annonymous function just for demo.
+        // This is what's gonna be called with the positional arguments
+        // provided in [args] and all options saved to [Options]
+        return nil
+    },
+}.Runtime().SetVersion("1.0.0-dev").SetPosArgs("arg1", "arg2?", "argN...")
 
 func main() {
-    // Use os.Args as input, run the program and handle errors automatically
-    CLI.FromOSArgs().RunAndExit()
+    err := program.Run(os.Args)
+    if err != nil {
+        // All errors are typed, allowing you to know exactly what went wrong.
+        // Regarless of how you handle them
+        // err.Error() should be enough information for the user.
+        switch err := err.(type) {
+        case parsex.ErrExecution:
+            // You can access the various properties provided into the error
+            if err.ErrKind == parsex.ErrKindExecIsNil && err.Name == "example" {
+                // In case you want to handle a specific error
+            }
+        default:
+            os.Stderr.WriteString(err.Error() + "\n")
+        }
+    }
 }
 ```
