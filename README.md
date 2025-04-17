@@ -48,7 +48,7 @@ var program = parsex.Program{
 }.Runtime().SetVersion("1.0.0-dev").SetPosArgs("arg1", "arg2?", "argN...")
 
 func main() {
-    err := program.Run(os.Args)
+    err := program.Run(os.Args[1:])
     if err != nil {
         // All errors are typed, allowing you to know exactly what went wrong.
         // Regarless of how you handle them
