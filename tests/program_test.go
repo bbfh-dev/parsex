@@ -105,7 +105,7 @@ func TestProgramClusterOptions(test *testing.T) {
 		"-vd",
 		"-input=/tmp/filename",
 		"-some-number", "15",
-		"arg1", "arg2", "arg3",
+		"--", "arg1", "arg2", "--value",
 	}))
 	assert.DeepEqual(test, testOptions.Verbose, true)
 	assert.DeepEqual(test, testOptions.Debug, true)

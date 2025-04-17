@@ -82,6 +82,7 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 		return err
 	}
 
+iterate:
 	for i := 0; i < len(inputArgs); i++ {
 		arg := inputArgs[i]
 		if !strings.HasPrefix(arg, "-") {
@@ -101,6 +102,9 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 		case "--version":
 			runtime.PrintVersion(os.Stdout)
 			return nil
+		case "--":
+			runtime.exec.Args = append(runtime.exec.Args, inputArgs[i+1:]...)
+			break iterate
 		}
 
 		var err error
