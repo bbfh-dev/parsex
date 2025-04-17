@@ -9,10 +9,10 @@ import (
 
 const errUnknownType = "unknown error"
 
-type errKind int
+type ErrKind int
 
 const (
-	ErrKindMustbePointer errKind = iota
+	ErrKindMustbePointer ErrKind = iota
 	ErrKindPointToStruct
 
 	ErrKindExecIsNil
@@ -28,7 +28,7 @@ const (
 )
 
 type ErrProgramData struct {
-	ErrKind errKind
+	ErrKind ErrKind
 	Name    string
 	Type    reflect.Type
 }
@@ -53,7 +53,7 @@ func (err ErrProgramData) Error() string {
 }
 
 type ErrExecution struct {
-	ErrKind errKind
+	ErrKind ErrKind
 	Name    string
 	Err     error
 }
@@ -70,7 +70,7 @@ func (err ErrExecution) Error() string {
 }
 
 type ErrInput struct {
-	ErrKind     errKind
+	ErrKind     ErrKind
 	Name        string
 	RequiredLen int
 	ProvidedLen int
@@ -101,7 +101,7 @@ func (err ErrInput) Error() string {
 }
 
 type ErrOption struct {
-	ErrKind errKind
+	ErrKind ErrKind
 	Name    string
 	Option  string
 	Err     error
