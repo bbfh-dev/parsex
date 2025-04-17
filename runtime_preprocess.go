@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/bbfh-dev/parsex/internal"
-	"github.com/bbfh-dev/parsex/internal/cerr"
 	"github.com/iancoleman/strcase"
 )
 
@@ -16,12 +15,20 @@ func (runtime *runtimeType) preprocess() error {
 
 	typePtr := reflect.TypeOf(runtime.data)
 	if typePtr.Kind() != reflect.Pointer {
-		return cerr.DataMustBePointer{Type: typePtr}
+		return ErrProgramData{
+			ErrKind: ErrKindMustbePointer,
+			Name:    runtime.name,
+			Type:    typePtr,
+		}
 	}
 
 	typeElem := typePtr.Elem()
 	if typeElem.Kind() != reflect.Struct {
-		return cerr.DataMustPointToStruct{Type: typePtr}
+		return ErrProgramData{
+			ErrKind: ErrKindPointToStruct,
+			Name:    runtime.name,
+			Type:    typePtr,
+		}
 	}
 
 	valueElem := reflect.ValueOf(runtime.data).Elem()

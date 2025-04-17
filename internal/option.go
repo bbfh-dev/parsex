@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-
-	"github.com/bbfh-dev/parsex/internal/cerr"
 )
 
 var flagType = reflect.TypeOf(true)
@@ -82,7 +80,7 @@ func (option Option) Set(value string) error {
 		return nil
 	}
 
-	return cerr.OptionUnsupportedType{Type: option.Type}
+	return fmt.Errorf("unknown option type %q", option.Type)
 }
 
 func (option Option) SetFlag() {

@@ -1,11 +1,9 @@
 package parsex_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/bbfh-dev/parsex"
-	"github.com/bbfh-dev/parsex/internal/cerr"
 	"gotest.tools/assert"
 )
 
@@ -18,8 +16,8 @@ func TestErrDataIsPointer(test *testing.T) {
 	}.Runtime()
 	err := program.Run([]string{})
 	switch err := err.(type) {
-	case cerr.DuringPreprocessing:
-		assert.Assert(test, reflect.TypeOf(err.Err) == reflect.TypeOf(cerr.DataMustBePointer{}))
+	case parsex.ErrProgramData:
+		assert.DeepEqual(test, err.ErrKind, parsex.ErrKindMustbePointer)
 	default:
 		test.Fatal("error must be DuringPreprocessing{}")
 	}
@@ -35,8 +33,8 @@ func TestErrDataIsStruct(test *testing.T) {
 	}.Runtime()
 	err := program.Run([]string{})
 	switch err := err.(type) {
-	case cerr.DuringPreprocessing:
-		assert.Assert(test, reflect.TypeOf(err.Err) == reflect.TypeOf(cerr.DataMustPointToStruct{}))
+	case parsex.ErrProgramData:
+		assert.DeepEqual(test, err.ErrKind, parsex.ErrKindPointToStruct)
 	default:
 		test.Fatal("error must be DuringPreprocessing{}")
 	}

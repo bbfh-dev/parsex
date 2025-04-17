@@ -1,9 +1,8 @@
 package parsex
 
 import (
+	"errors"
 	"strings"
-
-	"github.com/bbfh-dev/parsex/internal/cerr"
 )
 
 // processLongOption handles options starting with "--".
@@ -21,9 +20,11 @@ func (runtime *runtimeType) processLongOption(arg string, i *int, inputArgs []st
 	name = optionStr
 	option, exists := runtime.genOptions.Get(name)
 	if !exists {
-		return cerr.UnknownOption{
-			Name:   runtime.name,
-			Option: arg,
+		return ErrOption{
+			ErrKind: ErrKindUnknownOption,
+			Name:    runtime.name,
+			Option:  arg,
+			Err:     nil,
 		}
 	}
 	if option.IsFlag() {
@@ -33,9 +34,11 @@ func (runtime *runtimeType) processLongOption(arg string, i *int, inputArgs []st
 
 	*i++
 	if *i >= len(inputArgs) {
-		return cerr.OptionNeedsValue{
-			Name:   runtime.name,
-			Option: arg,
+		return ErrOption{
+			ErrKind: ErrKindOptionNeedsValue,
+			Name:    runtime.name,
+			Option:  arg,
+			Err:     nil,
 		}
 	}
 	value = inputArgs[*i]
@@ -63,9 +66,11 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 		}
 		*i++
 		if *i >= len(inputArgs) {
-			return cerr.OptionNeedsValue{
-				Name:   runtime.name,
-				Option: arg,
+			return ErrOption{
+				ErrKind: ErrKindOptionNeedsValue,
+				Name:    runtime.name,
+				Option:  arg,
+				Err:     nil,
 			}
 		}
 		return runtime.setOption(name, inputArgs[*i])
@@ -76,17 +81,20 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 		flagKey := string(char)
 		mapped, exists := runtime.genOptionAlts[flagKey]
 		if !exists {
-			return cerr.UnknownOptionCluster{
-				Name:   runtime.name,
-				Option: arg,
+			return ErrOption{
+				ErrKind: ErrKindUnknownCluster,
+				Name:    runtime.name,
+				Option:  arg,
+				Err:     nil,
 			}
 		}
 		option, exists := runtime.genOptions.Get(mapped)
 		if !exists || !option.IsFlag() {
-			return cerr.ClusterOnlyFlags{
-				Name:   runtime.name,
-				Option: arg,
-				Mapped: mapped,
+			return ErrOption{
+				ErrKind: ErrKindMistypedCluster,
+				Name:    runtime.name,
+				Option:  arg,
+				Err:     errors.New(mapped),
 			}
 		}
 		option.SetFlag()
@@ -99,9 +107,11 @@ func (runtime *runtimeType) processShortOption(arg string, i *int, inputArgs []s
 func (runtime *runtimeType) setOption(name, value string) error {
 	option, exists := runtime.genOptions.Get(name)
 	if !exists {
-		return cerr.UnknownOption{
-			Name:   runtime.name,
-			Option: "--" + name,
+		return ErrOption{
+			ErrKind: ErrKindUnknownOption,
+			Name:    runtime.name,
+			Option:  "--" + name,
+			Err:     nil,
 		}
 	}
 	if option.IsFlag() {
@@ -109,10 +119,11 @@ func (runtime *runtimeType) setOption(name, value string) error {
 		return nil
 	}
 	if err := option.Set(value); err != nil {
-		return cerr.SettingOption{
-			Name:   runtime.name,
-			Option: "--" + name,
-			Err:    err,
+		return ErrOption{
+			ErrKind: ErrKindSettingOption,
+			Name:    runtime.name,
+			Option:  "--" + name,
+			Err:     err,
 		}
 	}
 	return nil

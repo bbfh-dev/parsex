@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/bbfh-dev/parsex/internal"
-	"github.com/bbfh-dev/parsex/internal/cerr"
 )
 
 // [runtimeType] is created from [Program] and it's what actually handles everything
@@ -80,10 +79,7 @@ func (runtime *runtimeType) RegisterCommand(command *runtimeType) *runtimeType {
 func (runtime *runtimeType) Run(inputArgs []string) error {
 	runtime.exec.Clear()
 	if err := runtime.preprocess(); err != nil {
-		return cerr.DuringPreprocessing{
-			Name: runtime.name,
-			Err:  err,
-		}
+		return err
 	}
 
 	for i := 0; i < len(inputArgs); i++ {
@@ -120,24 +116,28 @@ func (runtime *runtimeType) Run(inputArgs []string) error {
 	lenProv := len(runtime.exec.Args)
 	lenReq := len(runtime.genReqPosArgs)
 	if lenProv < lenReq {
-		return cerr.NotEnoughArgs{
-			Name:          runtime.name,
-			LenOfRequired: lenReq,
-			LenOfProvided: lenProv,
-			ArgPrinter:    runtime.printArgs,
-			Args:          runtime.exec.Args,
+		return ErrInput{
+			ErrKind:     ErrKindNotEnoughArgs,
+			Name:        runtime.name,
+			RequiredLen: lenReq,
+			ProvidedLen: lenProv,
+			ExecArgs:    runtime.exec.Args,
+			ArgPrinter:  runtime.printArgs,
 		}
 	}
 
 	if runtime.exec.Function == nil {
-		return cerr.ExecIsNil{
-			Name: runtime.name,
+		return ErrExecution{
+			ErrKind: ErrKindExecIsNil,
+			Name:    runtime.name,
+			Err:     nil,
 		}
 	}
 	if err := runtime.exec.Run(); err != nil {
-		return cerr.DuringExecution{
-			Name: runtime.name,
-			Err:  err,
+		return ErrExecution{
+			ErrKind: ErrKindExecution,
+			Name:    runtime.name,
+			Err:     err,
 		}
 	}
 	return nil
