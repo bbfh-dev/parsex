@@ -1,4 +1,4 @@
-package tests
+package parsex_test
 
 import (
 	"bytes"
