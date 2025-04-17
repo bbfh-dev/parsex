@@ -19,7 +19,7 @@ func TestErrDataIsPointer(test *testing.T) {
 	case parsex.ErrProgramData:
 		assert.DeepEqual(test, err.ErrKind, parsex.ErrKindMustbePointer)
 	default:
-		test.Fatal("error must be DuringPreprocessing{}")
+		test.Fatal("error must be ErrProgramData{}")
 	}
 }
 
@@ -36,7 +36,7 @@ func TestErrDataIsStruct(test *testing.T) {
 	case parsex.ErrProgramData:
 		assert.DeepEqual(test, err.ErrKind, parsex.ErrKindPointToStruct)
 	default:
-		test.Fatal("error must be DuringPreprocessing{}")
+		test.Fatal("error must be ErrProgramData{}")
 	}
 }
 
