@@ -1,6 +1,6 @@
 # Parsex
 
-Parsex `/pɑːrs ˈɛks/` — a GNU-/POSIX-compiant CLI argument parsing and validation library.
+Parsex `/pɑːrsɛks/` — a GNU-/POSIX-compiant CLI argument parsing and validation library.
 
 ## Features
 
