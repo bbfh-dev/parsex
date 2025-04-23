@@ -13,7 +13,7 @@ var testOptions struct {
 	Verbose    bool   `alt:"v" desc:"Print verbose debug information"`
 	Debug      bool   `alt:"d" desc:"Run the program in DEBUG mode"`
 	Input      string `desc:"Some input file"`
-	SomeNumber int    `alt:"N" desc:"A valid integer"`
+	SomeNumber int    `alt:"N" desc:"A valid integer" default:"69"`
 }
 
 var buildProgram = parsex.Program{
@@ -61,7 +61,7 @@ Options:
         # Run the program in DEBUG mode
     --input <string>
         # Some input file
-    --some-number, -N <int>
+    --some-number, -N <int> (default: 69)
         # A valid integer
 `
 
@@ -90,13 +90,12 @@ func TestProgramLongOptions(test *testing.T) {
 		"--verbose",
 		"--debug",
 		"--input=/tmp/filename",
-		"--some-number", "15",
 		"arg1", "arg2", "arg3",
 	}))
 	assert.DeepEqual(test, testOptions.Verbose, true)
 	assert.DeepEqual(test, testOptions.Debug, true)
 	assert.DeepEqual(test, testOptions.Input, "/tmp/filename")
-	assert.DeepEqual(test, testOptions.SomeNumber, 15)
+	assert.DeepEqual(test, testOptions.SomeNumber, 69)
 }
 
 func TestProgramClusterOptions(test *testing.T) {

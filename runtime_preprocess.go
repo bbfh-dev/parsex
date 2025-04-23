@@ -49,16 +49,16 @@ func (runtime *runtimeType) preprocess() error {
 		}
 
 		name := strcase.ToKebab(fieldType.Name)
-		runtime.genOptions.Add(
-			name,
-			internal.Option{
-				Name: name,
-				Alt:  fieldType.Tag.Get("alt"),
-				Desc: fieldType.Tag.Get("desc"),
-				Type: fieldType.Type,
-				Ref:  &fieldValue,
-			},
-		)
+		option := internal.Option{
+			Name:    name,
+			Alt:     fieldType.Tag.Get("alt"),
+			Desc:    fieldType.Tag.Get("desc"),
+			Default: fieldType.Tag.Get("default"),
+			Type:    fieldType.Type,
+			Ref:     &fieldValue,
+		}
+		option.Set(option.Default)
+		runtime.genOptions.Add(name, option)
 		if alt := fieldType.Tag.Get("alt"); alt != "" {
 			runtime.genOptionAlts[alt] = name
 		}

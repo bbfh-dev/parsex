@@ -26,9 +26,10 @@ var VersionOption = Option{
 }
 
 type Option struct {
-	Name string
-	Alt  string
-	Desc string
+	Name    string
+	Alt     string
+	Desc    string
+	Default string
 
 	Type reflect.Type
 	Ref  *reflect.Value
@@ -45,7 +46,10 @@ func (option Option) String() string {
 	if option.IsFlag() {
 		return option.Flag()
 	}
-	return fmt.Sprintf("%s <%s>", option.Flag(), option.Type.String())
+	if option.Default == "" {
+		return fmt.Sprintf("%s <%s>", option.Flag(), option.Type.String())
+	}
+	return fmt.Sprintf("%s <%s> (default: %s)", option.Flag(), option.Type.String(), option.Default)
 }
 
 func (option Option) IsFlag() bool {
